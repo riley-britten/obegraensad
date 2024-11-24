@@ -1,6 +1,8 @@
 #include "Arduino.h"
 #include "Panel.h"
 
+unsigned char _frameCount = 0;
+
 Panel::Panel() {
   pinMode(_CLA, OUTPUT);
   pinMode(_CLK, OUTPUT);
@@ -13,15 +15,16 @@ void Panel::display() {
   digitalWrite(_EN, HIGH);
   // Index of each 16 bit value
   uint8_t w2 = 0;
-  int onesSent = 0;
 
   for (int i = 0; i < _bufferSize; i ++) {
     // Write data to data pin
-    digitalWrite(_IN, _panelBuffer[i]);
-    if (_panelBuffer[i]) { onesSent++; }
+    if (_panelBuffer[i]) {
+      digitalWrite(_IN, HIGH);
+    } else {
+      digitalWrite(_IN, LOW);
+    }
     // Create a clock pulse
     digitalWrite(_CLK, HIGH);
-    delayMicroseconds(_timing);
     digitalWrite(_CLK, LOW);
     // Increment counter tracking sent bits
     w2++;
@@ -30,12 +33,12 @@ void Panel::display() {
       // Every 16 bits pulse latch pin and reset counter
       w2 = 0;
       digitalWrite(_CLA, HIGH);
-      delayMicroseconds(_timing);
       digitalWrite(_CLA, LOW);
     }
   }
   // Pull write pin low
   digitalWrite(_EN, LOW);
+  _frameCount = (_frameCount + 1) % 256;
 }
 
 void Panel::fillBuffer(unsigned char val) {

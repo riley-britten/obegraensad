@@ -22,7 +22,7 @@ class Panel {
     bool _panelBuffer[256];
     const int _CLA = 10;
     const int _CLK = 11;
-    const int _IN = 12;
+    const int _IN = A1;
     const int _EN = A0;
     const int _timing = 10;
     const unsigned int _addrTable[16][16] = {

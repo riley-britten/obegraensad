@@ -2,6 +2,10 @@
 #include "./Ripple.h"
 #include "./TestImage.h"
 
+#define USE_TIMER_1 true
+#define TIMER_INTERVAL_MS 1
+#include "TimerInterrupt.h"
+
 #define LIFE_CUTOFF 1
 #define RAIN_CUTOFF 6
 #define MAX_RAIN_LENGTH 3
@@ -16,7 +20,8 @@ unsigned int animationDelays[NUM_PATTERNS] = {100, 50, 50, 400, 5000, 400, 400};
 
 int BTN = 2;
 unsigned long _previousInterrupt = 0;
-int _curPattern = 0;
+unsigned long _previousMillis = 0;
+int _curPattern = 4;
 int _curFrame = 0;
 Panel _panel;
 
@@ -40,34 +45,42 @@ void setup() {
   for (int i = 0; i < 16; i++) {
     rainPos[i] = 16;
   }
+  ITimer1.init();
+  ITimer1.attachInterruptInterval(15, drawDisplay);
+}
+
+void drawDisplay() {
+  _panel.display();
 }
 
 void loop() {
-  switch (_curPattern) {
-    case 0:
-      scan();
-      break;
-    case 1:
-      scroll();
-      break;
-    case 2:
-      rain();
-      break;
-    case 3:
-      ripple();
-      break;
-    case 4:
-      showTestImage();
-      break;
-    case 5:
-      gameOfLife();
-      break;
-    case 6:
-      seed();
-      break;
+  unsigned long currentMillis = millis();
+  if (currentMillis - _previousMillis > animationDelays[_curPattern]) {
+    switch (_curPattern) {
+      case 0:
+        scan();
+        break;
+      case 1:
+        scroll();
+        break;
+      case 2:
+        rain();
+        break;
+      case 3:
+        ripple();
+        break;
+      case 4:
+        showTestImage();
+        break;
+      case 5:
+        gameOfLife();
+        break;
+      case 6:
+        seed();
+        break;
+    }
+    _previousMillis = currentMillis;
   }
-  _panel.display();
-  delay(animationDelays[_curPattern]);
 }
 
 void rain() {
